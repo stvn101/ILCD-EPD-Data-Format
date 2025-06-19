@@ -65,7 +65,7 @@
     <xs:element name="amount">
         <xs:complexType>
             <xs:simpleContent>
-                <xs:extension base="xs:string">
+                <xs:extension base="xs:double">
                     <xs:attribute name="module" type="xs:string" use="required"/>
                     <xs:attribute name="scenario" type="xs:string" use="optional"/>
                 </xs:extension>
