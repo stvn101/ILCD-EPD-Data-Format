@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - feature/v1.3-RC1
     paths:
       - 'doc/asciidoc/**'
       - '.github/build/**'
