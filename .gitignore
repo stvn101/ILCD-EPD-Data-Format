@@ -2,3 +2,10 @@ ILCD-EPD-Data-Format.iml
 /.idea/
 **/.DS_Store
 **/~*.*
+
+# Generated documentation files
+doc/index.html
+doc/attribute_pages/
+doc/ilcd-epd-v1.3.csv
+doc/css/
+doc/js/
