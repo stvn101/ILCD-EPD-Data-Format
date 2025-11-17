@@ -2,6 +2,17 @@
 
 Welcome to the ILCD+EPD Data Format documentation. This README provides a comprehensive overview of the format, along with essential links, references, and resources.
 
+## Interactive Documentation
+
+**[ILCD+EPD v1.3 Process Dataset - Interactive Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/doc/)**
+
+Browse the complete ILCD+EPD v1.3 format specification with an interactive table featuring:
+- Search functionality across all fields
+- Language toggle (English/German)
+- Column show/hide controls
+- Detailed attribute pages with full specifications
+- CSV and AsciiDoc downloads
+
 ## ILCD+EPD Guides
 
 **[Developer Quick Start Guide](/doc/guides/EPD%20Data%20Format%20–%20Developer%20Quick%20Start%20Guide.md)**<br/>
