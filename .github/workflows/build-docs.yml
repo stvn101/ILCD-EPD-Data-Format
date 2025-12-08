@@ -33,12 +33,18 @@ jobs:
         python -m pip install --upgrade pip
         pip install pandas
 
-    - name: Generate documentation
+    - name: Generate EPD documentation
       run: |
         cd .github/build
         python generate_html_report.py
         python generate_attribute_pages.py
         python generate_csv_from_adoc.py
+
+    - name: Generate Schemadoc documentation
+      run: |
+        cd .github/build
+        python generate_schemadoc_html_report.py
+        python generate_schemadoc_attribute_pages.py
 
     - name: Copy static assets to doc folder
       run: |
