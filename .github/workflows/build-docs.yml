@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - feature/v1.3-RC1
+      - release/*
     paths:
       - 'doc/asciidoc/**'
       - '.github/build/**'
