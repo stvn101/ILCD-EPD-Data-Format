@@ -76,7 +76,7 @@ A number of new metadata fields has been added:
 
 *contact dataset:*
 
-- Entity IDs
+- Entity Identifiers
 
 
 
