@@ -13,7 +13,7 @@ Browse the complete ILCD+EPD v1.3 format specification with an interactive table
 
 | Schema Name | Source (XSD) | Interactive Documentation |
 |-------------|--------------|---------------------------|
-| EPD Dataset | [Source](./schemas/EPD_DataSet.xsd) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/EPD_DataSet.html) |
+| EPD Dataset | [Source](./schemas/EPD_DataSet.xsd) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/doc/) |
 | EPD Flow Dataset | [Source](./schemas/ILCD_FlowDataSet.xsd) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/EPD_FlowDataSet.html) |
 | ILCD Contact Dataset | [Source](./schemas/ILCD_ContactDataSet.xsd) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/ILCD_ContactDataSet.html) |
 | ILCD Flow Property Dataset | [Source](./schemas/ILCD_FlowPropertyDataSet.xsd) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/ILCD_FlowPropertyDataSet.html) |
