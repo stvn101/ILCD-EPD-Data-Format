@@ -20,7 +20,7 @@ Unlike with the 1.2 release, the v1.3 specification is fully backward compatible
 
 ## Namespaces
 
-What is usually referred to as ILCD+EPD data format is more precisely the ILCD data format with extensions for EPDs. Each of these extensions has their own namespace. There is a number of items present in the original ILCD format which are not being used in ILCD+EPD (see figure below).
+What is usually referred to as ILCD+EPD data format is more precisely the ILCD data format with extensions for EPDs. Each of these extensions has their own namespace. There is a number of items present in the original ILCD format which are not being used in ILCD+EPD.
 
 For the new v1.3 revision, yet some more information items are being added in a new namespace.
 ![Namespaces](img/Namespaces_v1.3.png)
