@@ -11,17 +11,17 @@ Browse the complete ILCD+EPD v1.3 format specification with an interactive table
 - Detailed attribute pages with full specifications
 - CSV and AsciiDoc downloads
 
-| Schema Name | Source (AsciiDoc) | Interactive Documentation |
-|-------------|-------------------|---------------------------|
-| EPD Dataset | [Source](./doc/asciidoc/schemadoc_adoc/EPD_DataSet.adoc) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/EPD_DataSet.html) |
-| EPD Flow Dataset | [Source](./doc/asciidoc/schemadoc_adoc/EPD_FlowDataSet.adoc) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/EPD_FlowDataSet.html) |
-| ILCD Contact Dataset | [Source](./doc/asciidoc/schemadoc_adoc/ILCD_ContactDataSet.adoc) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/ILCD_ContactDataSet.html) |
-| ILCD Flow Property Dataset | [Source](./doc/asciidoc/schemadoc_adoc/ILCD_FlowPropertyDataSet.adoc) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/ILCD_FlowPropertyDataSet.html) |
-| ILCD LCIA Method Dataset | [Source](./doc/asciidoc/schemadoc_adoc/ILCD_LCIAMethodDataSet.adoc) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/ILCD_LCIAMethodDataSet.html) |
-| ILCD Source Dataset | [Source](./doc/asciidoc/schemadoc_adoc/ILCD_SourceDataSet.adoc) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/ILCD_SourceDataSet.html) |
-| ILCD Unit Group Dataset | [Source](./doc/asciidoc/schemadoc_adoc/ILCD_UnitGroupDataSet.adoc) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/ILCD_UnitGroupDataSet.html) |
-| ILCD Common Data Types | [Source](./doc/asciidoc/schemadoc_adoc/ILCD_Common_DataTypes.adoc) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/ILCD_Common_DataTypes.html) |
-| ILCD Common Enumeration Values | [Source](./doc/asciidoc/schemadoc_adoc/ILCD_Common_EnumerationValues.adoc) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/ILCD_Common_EnumerationValues.html) |
+| Schema Name | Source (XSD) | Interactive Documentation |
+|-------------|--------------|---------------------------|
+| EPD Dataset | [Source](./schemas/EPD_DataSet.xsd) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/EPD_DataSet.html) |
+| EPD Flow Dataset | [Source](./schemas/ILCD_FlowDataSet.xsd) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/EPD_FlowDataSet.html) |
+| ILCD Contact Dataset | [Source](./schemas/ILCD_ContactDataSet.xsd) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/ILCD_ContactDataSet.html) |
+| ILCD Flow Property Dataset | [Source](./schemas/ILCD_FlowPropertyDataSet.xsd) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/ILCD_FlowPropertyDataSet.html) |
+| ILCD LCIA Method Dataset | [Source](./schemas/ILCD_LCIAMethodDataSet.xsd) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/ILCD_LCIAMethodDataSet.html) |
+| ILCD Source Dataset | [Source](./schemas/ILCD_SourceDataSet.xsd) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/ILCD_SourceDataSet.html) |
+| ILCD Unit Group Dataset | [Source](./schemas/ILCD_UnitGroupDataSet.xsd) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/ILCD_UnitGroupDataSet.html) |
+| ILCD Common Data Types | [Source](./schemas/ILCD_Common_DataTypes.xsd) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/ILCD_Common_DataTypes.html) |
+| ILCD Common Enumeration Values | [Source](./schemas/ILCD_Common_EnumerationValues.xsd) | [View Documentation](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/release/v1.3/schemadoc/ILCD_Common_EnumerationValues.html) |
 
 ## ILCD+EPD Guides
 
