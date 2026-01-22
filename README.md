@@ -28,9 +28,8 @@ Browse the complete ILCD+EPD v1.3 format specification with an interactive table
 **[Developer Quick Start Guide](/doc/guides/EPD%20Data%20Format%20–%20Developer%20Quick%20Start%20Guide.md)**<br/>
 This document serves as a starting point for software developers who want to integrate support for the ÖKOBAUDAT's EPD data format and/or data exchange to or from the ÖKOBAUDAT into their software applications. [(Download)](/doc/guides/EPD%20Data%20Format%20–%20Developer%20Quick%20Start%20Guide.docx)
 
-
-**[Migration Guide from v1.1 to v1.2](/doc/guides/EPD%20Data%20Format%20–%20Migration%20Guide%20from%201.1%20to%201.2.md)**<br/>
-This document is a migration guide outlining the changes from ILCD+EPD format version 1.1 to 1.2.
+**[Migration Guide from v1.2 to v1.3](/doc/guides/EPD%20Data%20Format%20–%20Migration%20Guide%20from%201.2%20to%201.3.md)**<br/>
+This document is a migration guide outlining the changes from ILCD+EPD format version 1.2 to 1.3.
 
 **[Technical Details](/doc/guides/EPD%20Data%20Format%20–%20Technical%20Details.md)**<br/>
 This document provides additional information for software developers who want to integrate support for the ILCD+EPD data format into their software applications. [(Download)](/doc/guides/EPD%20Data%20Format%20–%20Technical%20Details.docx)
@@ -68,5 +67,7 @@ For developers, the underlying logic for validating ILCD+EPD data against a give
 ### Validation profiles
 
 The generic profile for ILCD+EPD v1.2 for EN 15804+A1 and +A2 (EF3.0 and EF3.1) compliant data is available [here](https://repo1.maven.org/maven2/com/okworx/ilcd/validation/profiles/EPD-1.2-Generic-EN15804/2.2.0/EPD-1.2-Generic-EN15804-2.2.0.jar).
+
+***The Validation Profiles for version 1.3 are under development.***
 
 The profile with additionl specific rules for the [ÖKOBAUDAT](https://www.oekobaudat.de/) database is available [here](https://repo1.maven.org/maven2/com/okworx/ilcd/validation/profiles/EPD-1.2-OEKOBAUDAT/3.5.0/EPD-1.2-OEKOBAUDAT-3.5.0.jar).
