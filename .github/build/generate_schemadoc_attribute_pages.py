@@ -8,6 +8,11 @@ import pandas as pd
 import re
 import html
 import os
+import sys
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logger = logging.getLogger(__name__)
 
 # --- Constants ---
 # Define base directories - Updated for .github/build/ location
@@ -244,30 +249,33 @@ def process_single_file(adoc_path, output_base_dir):
 
 def main():
     """Main function to generate attribute pages for all schemadoc files."""
-    
-    # Check if source directory exists
-    if not os.path.exists(DATA_DIR):
-        print(f"Error: Source directory not found: {DATA_DIR}")
-        return
-    
-    # Get list of AsciiDoc files
-    adoc_files = [f for f in os.listdir(DATA_DIR) if f.endswith('.adoc')]
-    
-    print(f"Found {len(adoc_files)} AsciiDoc files")
-    print(f"Output directory: {OUTPUT_DIR}")
-    print()
-    
-    # Process each file
-    success_count = 0
-    for adoc_file in sorted(adoc_files):
-        adoc_path = os.path.join(DATA_DIR, adoc_file)
-        print(f"Processing: {adoc_file}")
-        if process_single_file(adoc_path, OUTPUT_DIR):
-            success_count += 1
-        print()
-    
-    print(f"Successfully processed {success_count}/{len(adoc_files)} files")
+    try:
+        # Check if source directory exists
+        if not os.path.exists(DATA_DIR):
+            logger.error(f"Source directory not found: {DATA_DIR}")
+            return 1
+
+        # Get list of AsciiDoc files
+        adoc_files = [f for f in os.listdir(DATA_DIR) if f.endswith('.adoc')]
+
+        logger.info(f"Found {len(adoc_files)} AsciiDoc files")
+        logger.info(f"Output directory: {OUTPUT_DIR}")
+
+        # Process each file
+        success_count = 0
+        for adoc_file in sorted(adoc_files):
+            adoc_path = os.path.join(DATA_DIR, adoc_file)
+            logger.info(f"Processing: {adoc_file}")
+            if process_single_file(adoc_path, OUTPUT_DIR):
+                success_count += 1
+
+        logger.info(f"Successfully processed {success_count}/{len(adoc_files)} files")
+        return 0 if success_count == len(adoc_files) else 1
+
+    except Exception as e:
+        logger.error(f"Fatal error: {e}")
+        return 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

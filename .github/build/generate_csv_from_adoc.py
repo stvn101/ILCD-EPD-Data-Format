@@ -1,6 +1,11 @@
 import pandas as pd
 import re
 import os
+import sys
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logger = logging.getLogger(__name__)
 
 # --- Constants ---
 # Define base directories - Updated for .github/build/ location
@@ -16,7 +21,7 @@ CSV_OUTPUT_FILE = os.path.join(DOC_DIR, 'ilcd-epd-v1.3.csv')
 # --- Data Loading and Parsing ---
 def parse_asciidoc_table(filename):
     """Parses the main data table from an AsciiDoc file."""
-    print(f"Reading data from {filename}...")
+    logger.info(f"Reading data from {filename}...")
     with open(filename, 'r', encoding='utf-8') as f:
         content = f.read()
 
@@ -54,15 +59,30 @@ def parse_asciidoc_table(filename):
     return df
 
 # --- Main Execution ---
-if __name__ == "__main__":
+def main():
+    """Main entry point."""
     try:
         # 1. Parse the source AsciiDoc file
         df = parse_asciidoc_table(ADOC_SOURCE_FILE)
 
         # 2. Save the DataFrame to a CSV file
         df.to_csv(CSV_OUTPUT_FILE, index=False, encoding='utf-8-sig')
-        
-        print(f"Successfully generated CSV file: {CSV_OUTPUT_FILE}")
 
-    except (FileNotFoundError, ValueError, KeyError) as e:
-        print(f"An error occurred: {e}")
+        logger.info(f"Successfully generated CSV file: {CSV_OUTPUT_FILE}")
+        return 0
+
+    except FileNotFoundError as e:
+        logger.error(f"File not found: {e}")
+        return 1
+    except ValueError as e:
+        logger.error(f"Value error: {e}")
+        return 1
+    except KeyError as e:
+        logger.error(f"Key error: {e}")
+        return 1
+    except Exception as e:
+        logger.error(f"Fatal error: {e}")
+        return 1
+
+if __name__ == "__main__":
+    sys.exit(main())

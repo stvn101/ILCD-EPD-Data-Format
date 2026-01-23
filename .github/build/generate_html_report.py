@@ -2,6 +2,11 @@ import pandas as pd
 import re
 import html
 import os
+import sys
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logger = logging.getLogger(__name__)
 
 # --- Constants ---
 # Define base directories - Updated for .github/build/ location
@@ -19,7 +24,7 @@ HTML_OUTPUT_FILE = os.path.join(DOC_DIR, 'index.html')
 # --- Data Loading and Parsing ---
 def parse_asciidoc_table(filename):
     """Parses the main data table from an AsciiDoc file."""
-    print(f"Reading data from {filename}...")
+    logger.info(f"Reading data from {filename}...")
     with open(filename, 'r', encoding='utf-8') as f:
         content = f.read()
 
@@ -314,12 +319,27 @@ if __name__ == "__main__":
         # No renaming needed - using exact Excel column names
     }
 
-    try:
-        df = parse_asciidoc_table(ADOC_SOURCE_FILE)
-        html_content = generate_html_report(df, PRESENTATION_COLUMNS, COLUMN_MAPPING)
-        with open(HTML_OUTPUT_FILE, 'w', encoding='utf-8') as f:
-            f.write(html_content)
-        print(f"Successfully generated interactive HTML report: {HTML_OUTPUT_FILE}")
+    def main():
+        """Main entry point."""
+        try:
+            df = parse_asciidoc_table(ADOC_SOURCE_FILE)
+            html_content = generate_html_report(df, PRESENTATION_COLUMNS, COLUMN_MAPPING)
+            with open(HTML_OUTPUT_FILE, 'w', encoding='utf-8') as f:
+                f.write(html_content)
+            logger.info(f"Successfully generated interactive HTML report: {HTML_OUTPUT_FILE}")
+            return 0
 
-    except (FileNotFoundError, ValueError, KeyError) as e:
-        print(f"An error occurred: {e}")
+        except FileNotFoundError as e:
+            logger.error(f"File not found: {e}")
+            return 1
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            return 1
+        except KeyError as e:
+            logger.error(f"Key error: {e}")
+            return 1
+        except Exception as e:
+            logger.error(f"Fatal error: {e}")
+            return 1
+
+    sys.exit(main())

@@ -2,7 +2,12 @@ import pandas as pd
 import re
 import html
 import os
+import sys
+import logging
 from urllib.parse import quote
+
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logger = logging.getLogger(__name__)
 
 # --- Constants ---
 # Define base directories - Updated for .github/build/ location
@@ -18,7 +23,7 @@ PAGES_OUTPUT_DIR = os.path.join(DOC_DIR, 'attribute_pages')
 # --- Data Loading and Parsing ---
 def parse_asciidoc_table(filename):
     """Parses the main data table from an AsciiDoc file."""
-    print(f"Reading data from {filename}...")
+    logger.info(f"Reading data from {filename}...")
     with open(filename, 'r', encoding='utf-8') as f:
         content = f.read()
 
@@ -164,7 +169,7 @@ def generate_all_attribute_pages(df):
     
     if not os.path.exists(PAGES_OUTPUT_DIR):
         os.makedirs(PAGES_OUTPUT_DIR)
-        print(f"Created directory: {PAGES_OUTPUT_DIR}")
+        logger.info(f"Created directory: {PAGES_OUTPUT_DIR}")
     
     generated_pages = []
     
@@ -233,22 +238,37 @@ def generate_index_page(pages_info):
     return index_filepath
 
 # --- Main Execution ---
-if __name__ == "__main__":
+def main():
+    """Main entry point."""
     try:
         # Parse the AsciiDoc data
         df = parse_asciidoc_table(ADOC_SOURCE_FILE)
-        
+
         # Generate all attribute pages
-        print("Generating individual attribute pages...")
+        logger.info("Generating individual attribute pages...")
         pages_info = generate_all_attribute_pages(df)
-        
+
         # Generate index page
-        print("Generating index page...")
+        logger.info("Generating index page...")
         index_path = generate_index_page(pages_info)
-        
-        print(f"Successfully generated {len(pages_info)} attribute pages in '{PAGES_OUTPUT_DIR}' directory")
-        print(f"Index page created at: {index_path}")
-        print(f"Open '{os.path.join(PAGES_OUTPUT_DIR, 'index.html')}' to browse all pages")
-        
-    except (FileNotFoundError, ValueError, KeyError) as e:
-        print(f"An error occurred: {e}")
+
+        logger.info(f"Successfully generated {len(pages_info)} attribute pages in '{PAGES_OUTPUT_DIR}' directory")
+        logger.info(f"Index page created at: {index_path}")
+        logger.info(f"Open '{os.path.join(PAGES_OUTPUT_DIR, 'index.html')}' to browse all pages")
+        return 0
+
+    except FileNotFoundError as e:
+        logger.error(f"File not found: {e}")
+        return 1
+    except ValueError as e:
+        logger.error(f"Value error: {e}")
+        return 1
+    except KeyError as e:
+        logger.error(f"Key error: {e}")
+        return 1
+    except Exception as e:
+        logger.error(f"Fatal error: {e}")
+        return 1
+
+if __name__ == "__main__":
+    sys.exit(main())

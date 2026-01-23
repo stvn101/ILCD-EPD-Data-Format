@@ -10,6 +10,11 @@ import re
 import html
 import os
 import shutil
+import sys
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logger = logging.getLogger(__name__)
 
 # --- Constants ---
 # Define base directories - Updated for .github/build/ location
@@ -32,7 +37,7 @@ PRESENTATION_COLUMNS = [
 
 def parse_asciidoc_table(filename):
     """Parses the main data table from an AsciiDoc file."""
-    print(f"  Reading data from {filename}...")
+    logger.info(f"  Reading data from {filename}...")
     with open(filename, 'r', encoding='utf-8') as f:
         content = f.read()
 
@@ -206,62 +211,65 @@ def process_single_file(adoc_path, output_dir):
 
 def main():
     """Main function to process all schemadoc AsciiDoc files."""
-    
-    # Create output directories
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    os.makedirs(os.path.join(OUTPUT_DIR, 'css'), exist_ok=True)
-    os.makedirs(os.path.join(OUTPUT_DIR, 'js'), exist_ok=True)
-    os.makedirs(os.path.join(OUTPUT_DIR, 'attribute_pages'), exist_ok=True)
-    os.makedirs(os.path.join(OUTPUT_DIR, 'data'), exist_ok=True)
-    
-    # Check if source directory exists
-    if not os.path.exists(DATA_DIR):
-        print(f"Error: Source directory not found: {DATA_DIR}")
-        return
-    
-    # Get list of AsciiDoc files
-    adoc_files = [f for f in os.listdir(DATA_DIR) if f.endswith('.adoc')]
-    
-    print(f"Found {len(adoc_files)} AsciiDoc files in {DATA_DIR}")
-    print(f"Output directory: {OUTPUT_DIR}")
-    print()
-    
-    # Process each file
-    success_count = 0
-    for adoc_file in sorted(adoc_files):
-        adoc_path = os.path.join(DATA_DIR, adoc_file)
-        print(f"Processing: {adoc_file}")
-        if process_single_file(adoc_path, OUTPUT_DIR):
-            success_count += 1
-        print()
-    
-    print(f"Successfully processed {success_count}/{len(adoc_files)} files")
-    
-    # Copy CSS from build folder
-    print("\nCopying CSS file...")
-    build_dir = os.path.dirname(os.path.abspath(__file__))
-    src_css = os.path.join(build_dir, 'css', 'style.css')
-    if os.path.exists(src_css):
-        shutil.copy(src_css, os.path.join(OUTPUT_DIR, 'css', 'style.css'))
-        print(f"  Copied: style.css")
-    
-    # Copy schemadoc JS from build folder
-    print("\nCopying JS file...")
-    src_js = os.path.join(build_dir, 'js', 'schemadoc_script.js')
-    if os.path.exists(src_js):
-        shutil.copy(src_js, os.path.join(OUTPUT_DIR, 'js', 'schemadoc_script.js'))
-        print(f"  Copied: schemadoc_script.js")
-    
-    # Copy AsciiDoc source files to data folder for downloads
-    print("\nCopying AsciiDoc source files for download...")
-    for adoc_file in adoc_files:
-        src = os.path.join(DATA_DIR, adoc_file)
-        dst = os.path.join(OUTPUT_DIR, 'data', adoc_file)
-        shutil.copy(src, dst)
-        print(f"  Copied: {adoc_file}")
-    
-    print("\nDone!")
+    try:
+        # Create output directories
+        os.makedirs(OUTPUT_DIR, exist_ok=True)
+        os.makedirs(os.path.join(OUTPUT_DIR, 'css'), exist_ok=True)
+        os.makedirs(os.path.join(OUTPUT_DIR, 'js'), exist_ok=True)
+        os.makedirs(os.path.join(OUTPUT_DIR, 'attribute_pages'), exist_ok=True)
+        os.makedirs(os.path.join(OUTPUT_DIR, 'data'), exist_ok=True)
+
+        # Check if source directory exists
+        if not os.path.exists(DATA_DIR):
+            logger.error(f"Source directory not found: {DATA_DIR}")
+            return 1
+
+        # Get list of AsciiDoc files
+        adoc_files = [f for f in os.listdir(DATA_DIR) if f.endswith('.adoc')]
+
+        logger.info(f"Found {len(adoc_files)} AsciiDoc files in {DATA_DIR}")
+        logger.info(f"Output directory: {OUTPUT_DIR}")
+
+        # Process each file
+        success_count = 0
+        for adoc_file in sorted(adoc_files):
+            adoc_path = os.path.join(DATA_DIR, adoc_file)
+            logger.info(f"Processing: {adoc_file}")
+            if process_single_file(adoc_path, OUTPUT_DIR):
+                success_count += 1
+
+        logger.info(f"Successfully processed {success_count}/{len(adoc_files)} files")
+
+        # Copy CSS from build folder
+        logger.info("Copying CSS file...")
+        build_dir = os.path.dirname(os.path.abspath(__file__))
+        src_css = os.path.join(build_dir, 'css', 'style.css')
+        if os.path.exists(src_css):
+            shutil.copy(src_css, os.path.join(OUTPUT_DIR, 'css', 'style.css'))
+            logger.info("  Copied: style.css")
+
+        # Copy schemadoc JS from build folder
+        logger.info("Copying JS file...")
+        src_js = os.path.join(build_dir, 'js', 'schemadoc_script.js')
+        if os.path.exists(src_js):
+            shutil.copy(src_js, os.path.join(OUTPUT_DIR, 'js', 'schemadoc_script.js'))
+            logger.info("  Copied: schemadoc_script.js")
+
+        # Copy AsciiDoc source files to data folder for downloads
+        logger.info("Copying AsciiDoc source files for download...")
+        for adoc_file in adoc_files:
+            src = os.path.join(DATA_DIR, adoc_file)
+            dst = os.path.join(OUTPUT_DIR, 'data', adoc_file)
+            shutil.copy(src, dst)
+            logger.info(f"  Copied: {adoc_file}")
+
+        logger.info("Done!")
+        return 0
+
+    except Exception as e:
+        logger.error(f"Fatal error: {e}")
+        return 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

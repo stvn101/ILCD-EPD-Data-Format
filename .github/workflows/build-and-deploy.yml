@@ -1,0 +1,99 @@
+name: Build and Deploy Documentation
+
+on:
+  push:
+    branches: ['**']
+    paths:
+      - 'doc/**'
+      - '.github/build/**'
+      - '.github/workflows/build-and-deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update README links for current branch
+        run: |
+          # Replace release/v1.3 paths with current branch
+          sed -i "s|preview/release/v1\.3/|preview/${{ github.ref_name }}/|g" README.md
+
+          # Commit if there are changes
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git diff --quiet README.md || (git add README.md && git commit -m "chore: update README links for ${{ github.ref_name }}" && git push)
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate all documentation
+        run: |
+          cd .github/build
+
+          # Generate main docs (for /doc/)
+          python generate_html_report.py
+          python generate_attribute_pages.py
+          python generate_csv_from_adoc.py
+          python generate_schemadoc_html_report.py
+          python generate_schemadoc_attribute_pages.py
+
+          # Copy static assets to doc/
+          cp -r css ../../doc/
+          cp -r js ../../doc/
+
+          # Copy full doc content to preview folder for branch deployment
+          mkdir -p "../../preview/${{ github.ref_name }}"
+          cp -r ../../doc/* "../../preview/${{ github.ref_name }}/"
+
+          # Generate CSV→HTML for branch preview (overwrites with branch-specific identifiers)
+          python convert_csv_to_html.py "../../preview/${{ github.ref_name }}/identifiers"
+
+          # Create /data/ directory with legacy filenames for backwards compatibility
+          mkdir -p ../../data
+          cp ../../doc/ilcd-epd-v1.3.csv ../../data/epd_documentation.csv
+          cp ../../doc/asciidoc/ilcd-epd-v1.3.adoc ../../data/epd_documentation_from_xlsx_combined.adoc
+
+      # Deploy /data/ directory for legacy download links
+      - name: Deploy data files
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/')
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gitActions
+          publish_dir: ./data
+          destination_dir: data
+          keep_files: true
+
+      # Deploy main docs to /doc/ for main/release branches
+      - name: Deploy main documentation
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/')
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gitActions
+          publish_dir: ./doc
+          destination_dir: doc
+          keep_files: true
+
+      # Deploy branch-specific docs to /preview/{branch}/
+      - name: Deploy branch documentation
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gitActions
+          publish_dir: "./preview/${{ github.ref_name }}"
+          destination_dir: "preview/${{ github.ref_name }}"
+          keep_files: true
