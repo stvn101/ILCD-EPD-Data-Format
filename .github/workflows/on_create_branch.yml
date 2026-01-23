@@ -3,7 +3,8 @@ name: Create Branch Documentation
 on:
   create:
     branches:
-      - '**'  
+      - '**'
+  workflow_dispatch:  
 
 permissions:
   contents: write
@@ -39,10 +40,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install pandas openpyxl
 
-      # Step 5: Convert CSV to HTML 
+      # Step 4.5: Generate schemadoc attribute pages
+      - name: Generate schemadoc attribute pages
+        run: |
+          cd .github/build
+          python generate_schemadoc_attribute_pages.py
+
+      # Step 5: Convert CSV to HTML
       - name: Convert CSV to HTML
         run: |
-          html_output_dir="gitBranches/${{ env.branch_name }}/identifiers"
+          html_output_dir="gitBranches/${{ github.ref_name }}/identifiers"
           
           mkdir -p "$html_output_dir"
 
@@ -100,13 +107,13 @@ jobs:
 
       - name: Create directories for new branch outputs
         run: |
-          mkdir -p gitActions/gitBranches/${{ env.branch_name }}/schemadoc
+          mkdir -p "gitActions/gitBranches/${{ github.ref_name }}/schemadoc"
 
-      - name: Copy Files to gitActions
+      - name: Copy required files to target directory
         run: |
-          branch_name="${{ env.branch_name }}"
-          cp -r gitBranches/$branch_name gitActions/gitBranches/
-          cp -r ./doc/schemadoc/* gitActions/gitBranches/$branch_name/schemadoc/
+          branch_name="${{ github.ref_name }}"
+          cp -r "gitBranches/$branch_name/identifiers" "gitActions/gitBranches/$branch_name/"
+          cp -r ./doc/schemadoc/* "gitActions/gitBranches/$branch_name/schemadoc/"
 
       # Step 7: Commit and push changes to gitActions branch
       - name: Commit and push changes to gitActions branch
@@ -114,53 +121,27 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add gitBranches/${{ env.branch_name }}
-          git commit -m "Converted CSV files and added schemadoc content for ${{ env.branch_name }}"
+          git add "gitBranches/${{ github.ref_name }}"
+          git commit -m "Converted CSV files and added schemadoc content for ${{ github.ref_name }}"
           git push origin gitActions
 
-      # Step 8: Clear the content of README.md before updating it
-      - name: Clear README.md
+      # Step 8: Update README.md links for new branch
+      - name: Update README links for new branch
         run: |
-          echo "" > README.md
+          branch_name="${{ github.ref_name }}"
+          pages_url="${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
 
-      # Step 9: Update the README.md with links to the HTML files
-      - name: Update README.md with title and links
-        run: |
-          branch_name=${{ env.branch_name }}
-          readme_path="README.md"
-        
-          links="
-          # ILCD-EPD-Data-Format
-          ## Schemadocs:\n\n
-          - [EPD DataSet](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/$branch_name/schemadoc/EPD_DataSet.html)\n
-          - [EPD FlowDataSet](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/$branch_name/schemadoc/EPD_FlowDataSet.html)\n
-          - [ILCD Common DataTypes](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/$branch_name/schemadoc/ILCD_Common_DataTypes.html)\n
-          - [ILCD Common EnumerationValues](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/$branch_name/schemadoc/ILCD_Common_EnumerationValues.html)\n
-          - [ILCD ContactDataSet](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/$branch_name/schemadoc/ILCD_ContactDataSet.html)\n
-          - [ILCD FlowPropertyDataSet](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/$branch_name/schemadoc/ILCD_FlowPropertyDataSet.html)\n
-          - [ILCD LCIAMethodDataSet](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/$branch_name/schemadoc/ILCD_LCIAMethodDataSet.html)\n
-          - [ILCD SourceDataSet](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/$branch_name/schemadoc/ILCD_SourceDataSet.html)\n
-          - [ILCD UnitGroupDataSet](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/$branch_name/schemadoc/ILCD_UnitGroupDataSet.html)\n\n
+          # Replace schemadoc URLs (handles branch names with slashes)
+          sed -E -i 's|https://[^/]+\.github\.io/[^/]+/gitBranches/[^/]+(/[^/]+)?/schemadoc/|https://'"$pages_url"'/gitBranches/'"$branch_name"'/schemadoc/|g' README.md
 
-          ## Identifier:\n\n
-          - [BackgroundDB SourceDatasets ecoinvent](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/$branch_name/identifiers/BackgroundDB_SourceDatasets_ecoinvent.html)\n
-          - [BackgroundDB SourceDatasets GaBi](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/$branch_name/identifiers/BackgroundDB_SourceDatasets_GaBi.html)\n
-          - [EN15804+A1 indicators](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/$branch_name/identifiers/EN15804+A1_indicators.html)\n
-          - [EN15804+A2 (EF3.0) indicators](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/$branch_name/identifiers/EN15804+A2_EF3.0_indicators.html)\n
-          - [EN15804+A2 (EF3.1) indicators](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/$branch_name/identifiers/EN15804+A2_EF3.1_indicators.html)\n
-          - [Common references](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/$branch_name/identifiers/Common_references.html)\n
-          - [Country specific indicators](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/$branch_name/identifiers/Country-specific_indicators.html)\n
-          - [Flow properties and unit groups](https://indatawg.github.io/ILCD-EPD-Data-Format/gitBranches/$branch_name/identifiers/Flow_properties_and_unit_groups.html)\n\n
-          "
+          # Replace identifiers URLs (handles branch names with slashes)
+          sed -E -i 's|https://[^/]+\.github\.io/[^/]+/gitBranches/[^/]+(/[^/]+)?/identifiers/|https://'"$pages_url"'/gitBranches/'"$branch_name"'/identifiers/|g' README.md
 
-          # Add links to README.md
-          echo -e "$links" >> $readme_path
-
-      # Step 10: Commit and push the updated README.md to the new branch
+      # Step 9: Commit and push the updated README.md to the new branch
       - name: Commit and push updated README.md
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git commit -m "Added links to HTML documentation for ${{ env.branch_name }}"
-          git push origin ${{ env.branch_name }}
+          git commit -m "Added links to HTML documentation for ${{ github.ref_name }}"
+          git push origin "${{ github.ref_name }}"

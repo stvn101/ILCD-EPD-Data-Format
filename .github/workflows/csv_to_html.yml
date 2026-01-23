@@ -5,7 +5,8 @@ on:
     paths:
       - 'doc/identifiers/*.csv'
     branches:
-      - '**'  
+      - '**'
+  workflow_dispatch:  
 
 permissions:
   contents: write 
@@ -118,6 +119,6 @@ jobs:
         branch_name=${{ steps.branch_name.outputs.branch }}
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git add gitBranches/$branch_name/identifiers/
-        git commit -m "Automated conversion of CSV to HTML for $branch_name"
+        git add "gitBranches/$branch_name/identifiers/"
+        git diff --staged --quiet || git commit -m "Automated conversion of CSV to HTML for $branch_name"
         git push origin gitActions
