@@ -50,53 +50,8 @@ jobs:
       - name: Convert CSV to HTML
         run: |
           html_output_dir="gitBranches/${{ github.ref_name }}/identifiers"
-          
           mkdir -p "$html_output_dir"
-
-          python - <<EOF
-          import pandas as pd
-          import os
-          from openpyxl import load_workbook
-
-          # Output directory based on branch name
-          html_output_dir = "${html_output_dir}"
-  
-
-          # Define files and IDs
-          files_with_ids = {
-              "ecoinvent database: source data sets": "doc/identifiers/BackgroundDB_SourceDatasets_ecoinvent.csv",
-              "GaBi database: source data sets": "doc/identifiers/BackgroundDB_SourceDatasets_GaBi.csv",
-              "Common references": "doc/identifiers/Common_references.csv",
-              "Country-specific indicators": "doc/identifiers/Country-specific_indicators.csv",
-              "EN15804+A1 indicators": "doc/identifiers/EN15804+A1_indicators.csv",
-              "EN15804+A2 (EF3.0) indicators": "doc/identifiers/EN15804+A2_EF3.0_indicators.csv",
-              "EN15804+A2 (EF3.1) indicators": "doc/identifiers/EN15804+A2_EF3.1_indicators.csv",
-              "Flow properties and unit groups": "doc/identifiers/Flow_properties_and_unit_groups.csv"
-          }
-
-          # Convert CSV to HTML
-          for file_id, file_path in files_with_ids.items():
-              if os.path.exists(file_path):
-                  df = pd.read_csv(file_path)
-                  html_table = df.to_html(index=False, classes='table table-striped', border=0, table_id=file_id)
-                  html_filename = os.path.join(html_output_dir, os.path.basename(file_path).replace('.csv', '.html'))
-                  with open(html_filename, 'w') as f:
-                      f.write(f"""
-                      <!DOCTYPE html>
-                      <html>
-                      <head>
-                          <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-                          <title>{file_id}</title>
-                      </head>
-                      <body>
-                          <div class="container">
-                              <h1>{file_id}</h1>
-                              {html_table}
-                          </div>
-                      </body>
-                      </html>
-                      """)
-
+          python .github/build/convert_csv_to_html.py "$html_output_dir"
 
       # Step 6: Checkout the gitActions branch and create directories for schemadoc
       - name: Checkout gitActions branch
@@ -122,8 +77,8 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add "gitBranches/${{ github.ref_name }}"
-          git commit -m "Converted CSV files and added schemadoc content for ${{ github.ref_name }}"
-          git push origin gitActions
+          git diff --staged --quiet || git commit -m "Converted CSV files and added schemadoc content for ${{ github.ref_name }}"
+          git diff --staged --quiet || git push origin gitActions
 
       # Step 8: Update README.md links for new branch
       - name: Update README links for new branch
@@ -143,5 +98,5 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git commit -m "Added links to HTML documentation for ${{ github.ref_name }}"
-          git push origin "${{ github.ref_name }}"
+          git diff --staged --quiet || git commit -m "Added links to HTML documentation for ${{ github.ref_name }}"
+          git diff --staged --quiet || git push origin "${{ github.ref_name }}"

@@ -142,28 +142,36 @@ jobs:
         EOF
 
     - name: Checkout gitActions branch
+      uses: actions/checkout@v2
+      with:
+        ref: gitActions
+        path: gitActions
+
+    - name: Copy release files to gitActions branch
       run: |
-        git fetch origin gitActions
-        git checkout gitActions
-      shell: bash
+        TAG_NAME=${GITHUB_REF##*/}
+        mkdir -p gitActions/doc/releases/${TAG_NAME}
+        cp -r doc/releases/${TAG_NAME}/* gitActions/doc/releases/${TAG_NAME}/
 
     - name: Commit and push documentation and zip
       if: success()
+      working-directory: gitActions
       run: |
         TAG_NAME=${GITHUB_REF##*/}
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git add doc/releases/${TAG_NAME}/index.html doc/releases/${TAG_NAME}/${TAG_NAME}.zip doc/releases/${TAG_NAME}/doc
-        git commit -m "Add versioned documentation and zip for ${TAG_NAME}"
-        git push origin HEAD:gitActions
+        git diff --staged --quiet || git commit -m "Add versioned documentation and zip for ${TAG_NAME}"
+        git diff --staged --quiet || git push origin gitActions
 
     - name: Update Previous Versions in README
       if: success()
+      working-directory: gitActions
       run: |
         TAG_NAME=${GITHUB_REF##*/}
         echo "- [${TAG_NAME}](doc/releases/${TAG_NAME}/index.html)" >> README.md
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git add README.md
-        git commit -m "Add ${TAG_NAME} to Previous versions in README"
-        git push origin HEAD:gitActions
+        git diff --staged --quiet || git commit -m "Add ${TAG_NAME} to Previous versions in README"
+        git diff --staged --quiet || git push origin gitActions
