@@ -25,7 +25,7 @@
             {%- for col in columns if col not in ['Element/Attribute Name', 'Original ILCD Format Definition (en)'] %}
             {%- set col_id = col | replace(' ', '-') | replace('(', '') | replace(')', '') %}
             {%- set col_class = 'lang-de' if '(de)' in col else ('lang-en' if '(en)' in col else '') %}
-            <label for="toggle-{{ col_id }}" class="{{ col_class }}"><input type="checkbox" id="toggle-{{ col_id }}" data-col="{{ col | e }}" checked>{{ col | e }}</label>
+            <label for="toggle-{{ col_id }}" class="{{ col_class }}"><input type="checkbox" class="col-toggle" id="toggle-{{ col_id }}" data-col="{{ col | e }}" checked>{{ col | e }}</label>
             {%- endfor %}
         </div>
     </div>
