@@ -32,7 +32,7 @@
     <table id="report-table">
         <thead>
             <tr>
-                <th data-col="View Attribute">View Attribute</th>
+                <th data-col="View Item">View Item</th>
                 {%- for col in columns %}
                 {%- set col_class = 'lang-de' if '(de)' in col else ('lang-en' if '(en)' in col else '') %}
                 <th class="{{ col_class }}" data-col="{{ col | e }}">{{ col | e }}</th>
@@ -49,8 +49,8 @@
             {# Check if this row starts an enum group #}
             {%- set enum_group = enum_groups.get(loop.index0) %}
             <tr data-tooltip="{{ path_tooltip }}">
-                <td data-col="View Attribute">
-                    <button class="view-attr-btn" onclick="openAttributePage('{{ path | e }}')" title="View detailed information for this attribute">View Attribute</button>
+                <td data-col="View Item">
+                    <button class="view-attr-btn" onclick="openAttributePage('{{ path | e }}')" title="View detailed information for this item">View Item</button>
                 </td>
                 {%- for col in columns %}
                 {%- set col_class = 'lang-de' if '(de)' in col else ('lang-en' if '(en)' in col else '') %}
