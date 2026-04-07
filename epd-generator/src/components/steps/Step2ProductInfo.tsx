@@ -1,6 +1,7 @@
 import React from 'react';
 import { useEPDStore } from '../../store/epd-store';
 import type { MultiLangString } from '../../schema/types';
+import { ValidatedInput } from '../ValidatedInput';
 
 function getLang(arr: MultiLangString[], lang: string): string {
   return arr.find((m) => m.lang === lang)?.value ?? '';
@@ -36,22 +37,15 @@ export default function Step2ProductInfo() {
 
       <div className="space-y-5">
         {/* Product name EN */}
-        <div>
-          <label htmlFor="nameEn" className={labelClass}>
-            Product name (en) <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="nameEn"
-            type="text"
-            value={nameEn}
-            onChange={(e) =>
-              updateProcessInfo({ name: setLang(processInfo.name, 'en', e.target.value) })
-            }
-            className={inputClass}
-            aria-label="Product name (English)"
-            required
-          />
-        </div>
+        <ValidatedInput
+          fieldId="processInfo.name"
+          label="Product Name (English)"
+          value={nameEn}
+          onChange={(val) =>
+            updateProcessInfo({ name: setLang(processInfo.name, 'en', val) })
+          }
+          type="text"
+        />
 
         {/* Product name DE */}
         <div>
@@ -72,21 +66,15 @@ export default function Step2ProductInfo() {
 
         {/* Reference year & Valid until */}
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="referenceYear" className={labelClass}>
-              Reference year
-            </label>
-            <input
-              id="referenceYear"
-              type="number"
-              value={processInfo.referenceYear}
-              onChange={(e) =>
-                updateProcessInfo({ referenceYear: Number(e.target.value) })
-              }
-              className={inputClass}
-              aria-label="Reference year"
-            />
-          </div>
+          <ValidatedInput
+            fieldId="processInfo.referenceYear"
+            label="Reference Year"
+            value={processInfo.referenceYear}
+            onChange={(val) =>
+              updateProcessInfo({ referenceYear: Number(val) })
+            }
+            type="number"
+          />
           <div>
             <label htmlFor="validUntil" className={labelClass}>
               Valid until

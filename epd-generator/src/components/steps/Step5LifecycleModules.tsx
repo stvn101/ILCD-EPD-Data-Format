@@ -6,11 +6,12 @@
 import a1CsvRaw from '../../../../ILCD-EPD-Data-Format-release-v1.3/doc/identifiers/EN15804+A1_indicators.csv?raw';
 import a2ef30CsvRaw from '../../../../ILCD-EPD-Data-Format-release-v1.3/doc/identifiers/EN15804+A2_EF3.0_indicators.csv?raw';
 import a2ef31CsvRaw from '../../../../ILCD-EPD-Data-Format-release-v1.3/doc/identifiers/EN15804+A2_EF3.1_indicators.csv?raw';
+import countryCSV from '../../../../ILCD-EPD-Data-Format-release-v1.3/doc/identifiers/Country-specific_indicators.csv?raw';
 
 import { useMemo } from 'react';
 import { useEPDStore } from '../../store/epd-store';
 import { ALL_MODULES } from '../../schema/standard-configs';
-import { parseIndicatorCSV } from '../../schema/indicator-parser';
+import { parseIndicatorCSV, parseCountryIndicatorCSV } from '../../schema/indicator-parser';
 import type { ModuleName, Indicator } from '../../schema/types';
 import type { Exchange, LCIAResult } from '../../model/epd-dataset';
 import IndicatorMatrix from './IndicatorMatrix';
@@ -64,6 +65,7 @@ export default function Step5LifecycleModules() {
   const dataset = useEPDStore((s) => s.dataset);
   const toggleModule = useEPDStore((s) => s.toggleModule);
   const updateDataset = useEPDStore((s) => s.updateDataset);
+  const selectedCountry = useEPDStore((s) => s.selectedCountry);
 
   const { meta, declaredModules, exchanges, lciaResults } = dataset;
   const standardVersion = meta.standardVersion;
@@ -95,6 +97,17 @@ export default function Step5LifecycleModules() {
   // Build value maps from current store state
   const exchangeValues = useMemo(() => buildExchangeValueMap(exchanges), [exchanges]);
   const lciaValues = useMemo(() => buildLCIAValueMap(lciaResults), [lciaResults]);
+
+  // Country-specific indicators filtered by selected country
+  const countryIndicators = useMemo(() => {
+    if (!selectedCountry) return [];
+    try {
+      const all = parseCountryIndicatorCSV(countryCSV);
+      return all.filter((ind) => ind.countries.includes(selectedCountry));
+    } catch {
+      return [];
+    }
+  }, [selectedCountry]);
 
   // -------------------------------------------------------------------------
   // onChange handlers
@@ -146,6 +159,44 @@ export default function Step5LifecycleModules() {
 
   function handleLCIAChange(indicatorUuid: string, module: ModuleName, value: number) {
     const indicator = indicatorSet.lcia.find((i) => i.uuid === indicatorUuid);
+    if (!indicator) return;
+
+    const existing = lciaResults.find((r) => r.methodRef.refObjectId === indicatorUuid);
+
+    if (existing) {
+      const otherAmounts = existing.amounts.filter((a) => a.module !== module);
+      const newAmounts = [...otherAmounts, { module, value }];
+      const meanAmount =
+        newAmounts.reduce((sum, a) => sum + a.value, 0) / (newAmounts.length || 1);
+
+      const newResults = lciaResults.map((r) =>
+        r.methodRef.refObjectId === indicatorUuid
+          ? { ...r, amounts: newAmounts, meanAmount }
+          : r
+      );
+      updateDataset({ lciaResults: newResults });
+    } else {
+      const newResult: LCIAResult = {
+        methodRef: {
+          type: 'LCIA method data set',
+          refObjectId: indicatorUuid,
+          version: indicator.version || '00.00.000',
+          shortDescription: [{ lang: 'en', value: indicator.nameEn }],
+        },
+        meanAmount: value,
+        amounts: [{ module, value }],
+        unitGroupRef: {
+          type: 'unit group data set',
+          refObjectId: indicator.unitGroupUuid,
+          shortDescription: [{ lang: 'en', value: indicator.unitEn }],
+        },
+      };
+      updateDataset({ lciaResults: [...lciaResults, newResult] });
+    }
+  }
+
+  function handleCountryLCIAChange(indicatorUuid: string, module: ModuleName, value: number) {
+    const indicator = countryIndicators.find((i) => i.uuid === indicatorUuid);
     if (!indicator) return;
 
     const existing = lciaResults.find((r) => r.methodRef.refObjectId === indicatorUuid);
@@ -238,6 +289,15 @@ export default function Step5LifecycleModules() {
             values={lciaValues}
             onChange={handleLCIAChange}
           />
+          {selectedCountry && countryIndicators.length > 0 && (
+            <IndicatorMatrix
+              title={`Country-Specific Indicators (${selectedCountry})`}
+              indicators={countryIndicators}
+              modules={activeModules}
+              values={lciaValues}
+              onChange={handleCountryLCIAChange}
+            />
+          )}
         </>
       ) : (
         <p className="text-sm text-gray-500 italic">

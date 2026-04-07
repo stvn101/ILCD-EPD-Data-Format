@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useEPDStore } from '../../store/epd-store';
 import { STANDARD_CONFIGS, EPD_SUB_TYPES } from '../../schema/standard-configs';
 import type { StandardVersion, EPDSubType } from '../../schema/types';
+import { parseCountryIndicatorCSV } from '../../schema/indicator-parser';
+import countryCSV from '../../../../ILCD-EPD-Data-Format-release-v1.3/doc/identifiers/Country-specific_indicators.csv?raw';
 
 interface StandardOption {
   version: StandardVersion;
@@ -31,6 +33,8 @@ export default function Step1StandardType() {
   const dataset = useEPDStore((s) => s.dataset);
   const setStandardVersion = useEPDStore((s) => s.setStandardVersion);
   const updateDataset = useEPDStore((s) => s.updateDataset);
+  const selectedCountry = useEPDStore((s) => s.selectedCountry);
+  const setCountry = useEPDStore((s) => s.setCountry);
 
   const selectedVersion = dataset.meta.standardVersion as StandardVersion;
   const selectedSubType = dataset.meta.subType as EPDSubType | undefined;
@@ -49,6 +53,34 @@ export default function Step1StandardType() {
       },
     });
   };
+
+  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setCountry(value === '' ? null : value);
+  };
+
+  // Parse country indicators and derive unique sorted country list
+  const { availableCountries, countryIndicators } = useMemo(() => {
+    try {
+      const indicators = parseCountryIndicatorCSV(countryCSV);
+      const countrySet = new Set<string>();
+      for (const ind of indicators) {
+        for (const c of ind.countries) {
+          countrySet.add(c);
+        }
+      }
+      return {
+        availableCountries: Array.from(countrySet).sort(),
+        countryIndicators: indicators,
+      };
+    } catch {
+      return { availableCountries: [], countryIndicators: [] };
+    }
+  }, []);
+
+  const countryIndicatorCount = selectedCountry
+    ? countryIndicators.filter((ind) => ind.countries.includes(selectedCountry)).length
+    : 0;
 
   const featureRows: { key: keyof typeof config.features; label: string }[] = [
     { key: 'contentDeclaration', label: 'Content Declaration' },
@@ -127,6 +159,36 @@ export default function Step1StandardType() {
             </option>
           ))}
         </select>
+      </div>
+
+      {/* Country-Specific Indicators */}
+      <div>
+        <label htmlFor="countryIndicators" className="block text-sm font-semibold text-gray-700 mb-2">
+          Country-Specific Indicators
+        </label>
+        <select
+          id="countryIndicators"
+          value={selectedCountry ?? ''}
+          onChange={handleCountryChange}
+          className="block w-full max-w-sm rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+        >
+          <option value="">None</option>
+          {availableCountries.map((country) => (
+            <option key={country} value={country}>
+              {country}
+            </option>
+          ))}
+        </select>
+        {selectedCountry && countryIndicatorCount > 0 && (
+          <p className="mt-2 text-xs text-blue-700">
+            Adds {countryIndicatorCount} additional indicator{countryIndicatorCount !== 1 ? 's' : ''} to the lifecycle modules table.
+          </p>
+        )}
+        {!selectedCountry && (
+          <p className="mt-2 text-xs text-gray-500">
+            Select a country to include country-specific indicators in the lifecycle modules table.
+          </p>
+        )}
       </div>
 
       {/* Configuration Summary */}
