@@ -1,0 +1,15 @@
+export const NS = {
+  PROCESS: 'http://lca.jrc.it/ILCD/Process',
+  COMMON: 'http://lca.jrc.it/ILCD/Common',
+  EPD_2013: 'http://www.iai.kit.edu/EPD/2013',
+  EPD_2019: 'http://www.indata.network/EPD/2019',
+  EPD_2024: 'http://www.indata.network/EPD/2024',
+  XSI: 'http://www.w3.org/2001/XMLSchema-instance',
+  MATML: 'http://www.matml.org/',
+  FLOW: 'http://lca.jrc.it/ILCD/Flow',
+  CONTACT: 'http://lca.jrc.it/ILCD/Contact',
+  SOURCE: 'http://lca.jrc.it/ILCD/Source',
+  UNIT_GROUP: 'http://lca.jrc.it/ILCD/UnitGroup',
+  FLOW_PROPERTY: 'http://lca.jrc.it/ILCD/FlowProperty',
+  LCIA_METHOD: 'http://lca.jrc.it/ILCD/LCIAMethod',
+} as const;
