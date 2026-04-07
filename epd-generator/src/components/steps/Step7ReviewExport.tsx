@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useEPDStore } from '../../store/epd-store';
 import { generateProcessXML } from '../../generators/xml/process-xml';
 import { generateJSON } from '../../generators/json-generator';
 import { generateILCDZip } from '../../generators/zip-generator';
+import { validateDataset } from '../../validation/validator';
 
 function downloadFile(filename: string, content: string, mimeType: string) {
   const blob = new Blob([content], { type: mimeType });
@@ -47,6 +48,9 @@ function InfoRow({ label, value }: InfoRowProps) {
 export default function Step7ReviewExport() {
   const dataset = useEPDStore((s) => s.dataset);
   const [status, setStatus] = useState<string | null>(null);
+
+  const validation = useMemo(() => validateDataset(dataset), [dataset]);
+  const hasErrors = validation.errors.length > 0;
 
   const uuid = dataset.meta.uuid;
   const productNameEn =
@@ -134,27 +138,69 @@ export default function Step7ReviewExport() {
         </div>
       </section>
 
+      {/* Validation Section */}
+      {validation.issues.length > 0 && (
+        <section>
+          <h3 className="text-lg font-medium text-gray-800 mb-3">Validation</h3>
+          <div className="space-y-2">
+            {validation.errors.length > 0 && (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+                <p className="text-sm font-semibold text-red-700 mb-2">
+                  Errors — export is disabled until these are resolved:
+                </p>
+                <ul className="space-y-1">
+                  {validation.errors.map((issue, i) => (
+                    <li key={i} className="text-sm text-red-700 flex gap-2">
+                      <span className="font-medium shrink-0">Step {issue.step} &bull; {issue.field}:</span>
+                      <span>{issue.message}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {validation.warnings.length > 0 && (
+              <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+                <p className="text-sm font-semibold text-yellow-800 mb-2">
+                  Warnings — export is allowed but consider addressing these:
+                </p>
+                <ul className="space-y-1">
+                  {validation.warnings.map((issue, i) => (
+                    <li key={i} className="text-sm text-yellow-800 flex gap-2">
+                      <span className="font-medium shrink-0">Step {issue.step} &bull; {issue.field}:</span>
+                      <span>{issue.message}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* Export Section */}
       <section>
         <h3 className="text-lg font-medium text-gray-800 mb-4">Export</h3>
         <div className="flex flex-wrap gap-3">
           <button
             onClick={handleExportXML}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-medium text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+            disabled={hasErrors}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-medium text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Export XML
           </button>
 
           <button
             onClick={handleExportZip}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            disabled={hasErrors}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Export ILCD ZIP
           </button>
 
           <button
             onClick={handleExportJSON}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white font-medium text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+            disabled={hasErrors}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white font-medium text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Export JSON
           </button>
