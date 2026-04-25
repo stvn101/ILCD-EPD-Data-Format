@@ -1,3 +1,5 @@
+import type { Indicator } from '../schema/types';
+
 export type ValidationSeverity = 'error' | 'warning';
 
 export interface ValidationIssue {
@@ -12,4 +14,9 @@ export interface ValidationResult {
   issues: ValidationIssue[];
   errors: ValidationIssue[];
   warnings: ValidationIssue[];
+}
+
+export interface ValidationContext {
+  authoritativeUuids?: Set<string>;
+  lciaIndicators?: Indicator[];
 }

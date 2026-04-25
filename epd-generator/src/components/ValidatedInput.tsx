@@ -21,9 +21,10 @@ export function ValidatedInput({ fieldId, label, value, onChange, type = 'text',
 
   return (
     <div className="space-y-1">
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <label className="block text-sm font-medium text-gray-700" htmlFor={fieldId}>{label}</label>
       {type === 'textarea' ? (
         <textarea
+          id={fieldId}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onBlur={handleBlur}
@@ -35,6 +36,7 @@ export function ValidatedInput({ fieldId, label, value, onChange, type = 'text',
         />
       ) : (
         <input
+          id={fieldId}
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}

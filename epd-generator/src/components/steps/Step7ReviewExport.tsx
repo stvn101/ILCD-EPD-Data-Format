@@ -4,6 +4,7 @@ import { generateProcessXML } from '../../generators/xml/process-xml';
 import { generateJSON } from '../../generators/json-generator';
 import { generateILCDZip } from '../../generators/zip-generator';
 import { validateDataset } from '../../validation/validator';
+import { loadAuthoritativeUuids, loadLciaIndicators } from '../../schema/browser-registry';
 
 function downloadFile(filename: string, content: string, mimeType: string) {
   const blob = new Blob([content], { type: mimeType });
@@ -45,12 +46,50 @@ function InfoRow({ label, value }: InfoRowProps) {
   );
 }
 
+function focusIssueField(fieldId: string) {
+  // The new step component may take a few frames to mount (Vite HMR + memoised
+  // selectors); poll for the target element instead of guessing a timeout.
+  let attempts = 0;
+  const tryFocus = () => {
+    const el = document.getElementById(fieldId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (
+        el instanceof HTMLInputElement ||
+        el instanceof HTMLTextAreaElement ||
+        el instanceof HTMLSelectElement
+      ) {
+        el.focus({ preventScroll: true });
+      }
+      return;
+    }
+    if (attempts++ < 20) {
+      requestAnimationFrame(tryFocus);
+    }
+  };
+  requestAnimationFrame(tryFocus);
+}
+
 export default function Step7ReviewExport() {
   const dataset = useEPDStore((s) => s.dataset);
+  const setStep = useEPDStore((s) => s.setStep);
   const [status, setStatus] = useState<string | null>(null);
 
-  const validation = useMemo(() => validateDataset(dataset), [dataset]);
+  const validation = useMemo(
+    () =>
+      validateDataset(dataset, {
+        authoritativeUuids: loadAuthoritativeUuids(dataset.meta.standardVersion),
+        lciaIndicators: loadLciaIndicators(dataset.meta.standardVersion),
+      }),
+    [dataset],
+  );
   const hasErrors = validation.errors.length > 0;
+
+  function navigateToIssue(step: number, field: string) {
+    // Validator steps are 1-indexed; the wizard's currentStep is 0-indexed.
+    setStep(step - 1);
+    focusIssueField(field);
+  }
 
   const uuid = dataset.meta.uuid;
   const productNameEn =
@@ -150,9 +189,16 @@ export default function Step7ReviewExport() {
                 </p>
                 <ul className="space-y-1">
                   {validation.errors.map((issue, i) => (
-                    <li key={i} className="text-sm text-red-700 flex gap-2">
-                      <span className="font-medium shrink-0">Step {issue.step} &bull; {issue.field}:</span>
-                      <span>{issue.message}</span>
+                    <li key={i}>
+                      <button
+                        type="button"
+                        onClick={() => navigateToIssue(issue.step, issue.field)}
+                        className="w-full text-left text-sm text-red-700 flex gap-2 rounded px-1 -mx-1 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400"
+                        aria-label={`Go to step ${issue.step} and fix ${issue.field}`}
+                      >
+                        <span className="font-medium shrink-0">Step {issue.step} &bull; {issue.field}:</span>
+                        <span>{issue.message}</span>
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -165,9 +211,16 @@ export default function Step7ReviewExport() {
                 </p>
                 <ul className="space-y-1">
                   {validation.warnings.map((issue, i) => (
-                    <li key={i} className="text-sm text-yellow-800 flex gap-2">
-                      <span className="font-medium shrink-0">Step {issue.step} &bull; {issue.field}:</span>
-                      <span>{issue.message}</span>
+                    <li key={i}>
+                      <button
+                        type="button"
+                        onClick={() => navigateToIssue(issue.step, issue.field)}
+                        className="w-full text-left text-sm text-yellow-800 flex gap-2 rounded px-1 -mx-1 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                        aria-label={`Go to step ${issue.step} and fix ${issue.field}`}
+                      >
+                        <span className="font-medium shrink-0">Step {issue.step} &bull; {issue.field}:</span>
+                        <span>{issue.message}</span>
+                      </button>
                     </li>
                   ))}
                 </ul>

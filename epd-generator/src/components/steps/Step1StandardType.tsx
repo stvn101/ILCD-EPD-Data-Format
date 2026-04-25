@@ -102,7 +102,7 @@ export default function Step1StandardType() {
       </div>
 
       {/* Standard Version Selection */}
-      <fieldset>
+      <fieldset id="meta.standardVersion">
         <legend className="text-sm font-semibold text-gray-700 mb-3">Standard Version</legend>
         <div className="space-y-3">
           {STANDARD_OPTIONS.map((option) => {

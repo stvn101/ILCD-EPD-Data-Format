@@ -91,6 +91,66 @@ export interface Manufacturer {
   sites: Site[];
 }
 
+// --- v1.3 (epd24) extensions ---
+
+export interface ProductId {
+  type: string; // 'GTIN', 'GMN', etc.
+  value: string;
+}
+
+export interface UseConditionFactor {
+  factorCategory: string; // e.g. 'A - inherent quality', 'E - outdoor environment'
+  objectSpecificGrade: number;
+  referenceGrade: number;
+  factor: number;
+  comments?: MultiLangString[];
+}
+
+export interface ServiceLife {
+  years: number;
+  useConditionFactors: UseConditionFactor[];
+  standardRef?: Reference;
+  useConditionsDocumentationRef?: Reference;
+  comments: MultiLangString[];
+}
+
+export interface CollectionFractions {
+  separate?: number;
+  withMixedWaste?: number;
+}
+
+export interface RecoveryFractions {
+  reuse?: number;
+  recycling?: number;
+  energyRecovery?: number;
+}
+
+export interface DisposalFractions {
+  finalDeposition?: number;
+}
+
+export interface EolScenarioData {
+  scenario: string;
+  collection?: CollectionFractions;
+  recovery?: RecoveryFractions;
+  disposal?: DisposalFractions;
+}
+
+export interface UseStageScenarioData {
+  soilAndWaterImpactsDescription: MultiLangString[];
+}
+
+export interface ScenarioData {
+  useStageScenarioData?: UseStageScenarioData;
+  eolScenarioData: EolScenarioData[];
+}
+
+export interface PCRCompliance {
+  allocation: boolean;
+  cutOffRules: boolean;
+  upstreamDataDeviatingFromAllocationPrinciples: boolean;
+}
+
 export interface ClassEntry {
   level: number;
   value: string;
@@ -140,16 +200,16 @@ export interface EPDDataset {
     locationDescription: MultiLangString[];
     technologyDescription: MultiLangString[];
     technologicalApplicability: MultiLangString[];
-    serviceLife?: {
-      years: number;
-      standardRef: Reference;
-      comment: MultiLangString[];
-    };
+    serviceLife?: ServiceLife;
+    estimatedServiceLife?: ServiceLife;
     scenarios: Scenario[];
+    scenarioData?: ScenarioData;
     safetyMargins?: SafetyMargins;
     variability?: Variability;
     svhc?: { present: boolean };
     contentDeclaration?: ContentDeclaration;
+    productIds?: ProductId[];
+    pcrCompliance?: PCRCompliance;
   };
 
   productFlow: {

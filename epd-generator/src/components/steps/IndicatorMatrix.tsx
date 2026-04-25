@@ -7,6 +7,12 @@ interface IndicatorMatrixProps {
   modules: ModuleName[];
   values: Map<string, Map<string, number>>;
   onChange: (indicatorUuid: string, module: ModuleName, value: number) => void;
+  /**
+   * DOM-id prefix for each cell input. Used by Step 7 click-to-fix navigation
+   * to deep-link to a specific (indicator, module) pair. Cell ids are
+   * `${idPrefix}.${indicator.uuid}.${module}`.
+   */
+  idPrefix?: string;
 }
 
 /**
@@ -25,6 +31,7 @@ export default function IndicatorMatrix({
   modules,
   values,
   onChange,
+  idPrefix,
 }: IndicatorMatrixProps) {
   if (indicators.length === 0 || modules.length === 0) {
     return null;
@@ -91,6 +98,7 @@ export default function IndicatorMatrix({
                         className="px-1 py-1 border-r border-gray-200 last:border-r-0"
                       >
                         <input
+                          id={idPrefix ? `${idPrefix}.${indicator.uuid}.${mod}` : undefined}
                           type="number"
                           step="any"
                           value={currentValue ?? ''}

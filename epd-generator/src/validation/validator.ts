@@ -1,7 +1,12 @@
 import type { EPDDataset } from '../model/epd-dataset';
-import type { ValidationIssue, ValidationResult } from './types';
+import type { ValidationContext, ValidationIssue, ValidationResult } from './types';
+import { findUnresolvedReferences, getBundledUuids } from './cross-reference';
+import { findIndicatorCoverageGaps } from './indicator-coverage';
 
-export function validateDataset(dataset: EPDDataset): ValidationResult {
+export function validateDataset(
+  dataset: EPDDataset,
+  context?: ValidationContext,
+): ValidationResult {
   const issues: ValidationIssue[] = [];
 
   // --- Errors (block export) ---
@@ -98,6 +103,21 @@ export function validateDataset(dataset: EPDDataset): ValidationResult {
       field: 'sources.pcr',
       message: 'A PCR (Product Category Rules) reference is recommended.',
     });
+  }
+
+  // Cross-reference: every Reference resolves to a bundled or authoritative UUID
+  if (context?.authoritativeUuids) {
+    issues.push(
+      ...findUnresolvedReferences(dataset, {
+        bundled: getBundledUuids(dataset),
+        authoritative: context.authoritativeUuids,
+      }),
+    );
+  }
+
+  // Indicator completeness: every declared module × LCIA indicator has a value
+  if (context?.lciaIndicators) {
+    issues.push(...findIndicatorCoverageGaps(dataset, context.lciaIndicators));
   }
 
   const errors = issues.filter((i) => i.severity === 'error');

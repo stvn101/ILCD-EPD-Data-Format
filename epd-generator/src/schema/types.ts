@@ -68,3 +68,12 @@ export interface FlowProperty {
   referenceUnitGroupUuid: string;
   versionUnitGroup: string;
 }
+
+export type BackgroundDbProvider = 'GaBi' | 'ecoinvent';
+
+export interface BackgroundDatabase {
+  provider: BackgroundDbProvider;
+  databaseVersion: string;
+  name: string;
+  uuid: string;
+}

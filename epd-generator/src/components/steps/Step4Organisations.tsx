@@ -1,7 +1,8 @@
-import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useEPDStore } from '../../store/epd-store';
+import { STANDARD_CONFIGS } from '../../schema/standard-configs';
 import type { Reference } from '../../schema/types';
+import type { Site } from '../../model/epd-dataset';
 
 function makeContactRef(uuid: string, name: string): Reference {
   return {
@@ -79,12 +80,16 @@ function OrgField({
 
 export default function Step4Organisations() {
   const organisations = useEPDStore((s) => s.dataset.organisations);
+  const standardVersion = useEPDStore((s) => s.dataset.meta.standardVersion);
   const updateOrganisations = useEPDStore((s) => s.updateOrganisations);
+
+  const features = STANDARD_CONFIGS[standardVersion].features;
 
   // Manufacturer (first entry or null)
   const manufacturer = organisations.manufacturers[0]?.contact ?? null;
   const mfrName = getRefName(manufacturer);
   const mfrUuid = getRefUuid(manufacturer);
+  const mfrSites: Site[] = organisations.manufacturers[0]?.sites ?? [];
 
   function setManufacturer(name: string, uuid: string) {
     const ref = makeContactRef(uuid || uuidv4(), name);
@@ -93,6 +98,34 @@ export default function Step4Organisations() {
         organisations.manufacturers.length > 0
           ? [{ ...organisations.manufacturers[0], contact: ref }]
           : [{ contact: ref, isProvidingData: true, sites: [] }],
+    });
+  }
+
+  function ensureManufacturer() {
+    if (organisations.manufacturers.length > 0) return organisations.manufacturers[0];
+    const ref = makeContactRef(uuidv4(), '');
+    const m = { contact: ref, isProvidingData: true, sites: [] };
+    updateOrganisations({ manufacturers: [m] });
+    return m;
+  }
+
+  function addSite() {
+    const m = ensureManufacturer();
+    updateOrganisations({
+      manufacturers: [{ ...m, sites: [...m.sites, { name: '' }] }],
+    });
+  }
+  function updateSite(i: number, patch: Partial<Site>) {
+    const m = organisations.manufacturers[0];
+    if (!m) return;
+    const sites = m.sites.map((s, idx) => (idx === i ? { ...s, ...patch } : s));
+    updateOrganisations({ manufacturers: [{ ...m, sites }] });
+  }
+  function removeSite(i: number) {
+    const m = organisations.manufacturers[0];
+    if (!m) return;
+    updateOrganisations({
+      manufacturers: [{ ...m, sites: m.sites.filter((_, idx) => idx !== i) }],
     });
   }
 
@@ -138,6 +171,98 @@ export default function Step4Organisations() {
           onUuidChange={(uuid) => setManufacturer(mfrName, uuid)}
           onGenerateUuid={() => setManufacturer(mfrName, uuidv4())}
         />
+
+        {/* Manufacturer sites (v1.3) */}
+        {features.manufacturers && (
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-700">Manufacturer sites</h3>
+              <button
+                type="button"
+                onClick={addSite}
+                className="text-sm font-medium text-blue-600 hover:text-blue-700 focus:outline-none"
+              >
+                + Add site
+              </button>
+            </div>
+
+            {mfrSites.length === 0 && (
+              <p className="text-sm text-gray-400 italic">No sites added.</p>
+            )}
+
+            {mfrSites.map((site, i) => {
+              const inputClass =
+                'block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500';
+              return (
+                <div
+                  key={i}
+                  className="rounded-lg border border-gray-200 bg-white p-3 space-y-2"
+                >
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-medium text-gray-500">Site {i + 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeSite(i)}
+                      className="text-red-400 hover:text-red-600 focus:outline-none text-lg leading-none"
+                      aria-label={`Remove site ${i + 1}`}
+                    >
+                      &times;
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={site.name}
+                    onChange={(e) => updateSite(i, { name: e.target.value })}
+                    placeholder="Site name (required)"
+                    className={inputClass}
+                    aria-label={`Site ${i + 1} name`}
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      value={site.facilityIdentifier ?? ''}
+                      onChange={(e) =>
+                        updateSite(i, { facilityIdentifier: e.target.value || undefined })
+                      }
+                      placeholder="Facility identifier"
+                      className={inputClass}
+                      aria-label={`Site ${i + 1} facility identifier`}
+                    />
+                    <input
+                      type="text"
+                      value={site.geoCode ?? ''}
+                      onChange={(e) =>
+                        updateSite(i, { geoCode: e.target.value || undefined })
+                      }
+                      placeholder="Geo code (e.g. DE)"
+                      maxLength={3}
+                      className={`${inputClass} uppercase`}
+                      aria-label={`Site ${i + 1} geo code`}
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    value={site.olc ?? ''}
+                    onChange={(e) => updateSite(i, { olc: e.target.value || undefined })}
+                    placeholder="Open Location Code (e.g. 9F28WXR4+FW2)"
+                    className={inputClass}
+                    aria-label={`Site ${i + 1} OLC`}
+                  />
+                  <input
+                    type="text"
+                    value={site.streetAddress ?? ''}
+                    onChange={(e) =>
+                      updateSite(i, { streetAddress: e.target.value || undefined })
+                    }
+                    placeholder="Street address"
+                    className={inputClass}
+                    aria-label={`Site ${i + 1} street address`}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         <OrgField
           label="Programme operator"

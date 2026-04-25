@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useEPDStore } from '../../store/epd-store';
-import type { MultiLangString, Reference } from '../../schema/types';
+import type { MultiLangString, Reference, FlowProperty } from '../../schema/types';
 import type { MatMLProperty, MatMLPropertyName } from '../../model/epd-dataset';
+import { parseFlowPropertiesCSV } from '../../schema/indicator-parser';
+// Static ?raw import resolved by Vite at bundle time.
+import flowPropertiesCSV from '../../../../ILCD-EPD-Data-Format-release-v1.3/doc/identifiers/Flow_properties_and_unit_groups.csv?raw';
 
 function getLang(arr: MultiLangString[], lang: string): string {
   return arr.find((m) => m.lang === lang)?.value ?? '';
@@ -20,38 +23,16 @@ interface DeclaredUnitOption {
   unitGroupRef: string;
 }
 
-const DECLARED_UNIT_OPTIONS: DeclaredUnitOption[] = [
-  {
-    label: 'Mass (kg)',
-    unit: 'kg',
-    flowPropertyRef: '93a60a56-a3c8-11da-a746-0800200b9a66',
-    unitGroupRef: '93a60a57-a4c8-11da-a746-0800200c9a66',
-  },
-  {
-    label: 'Volume (m3)',
-    unit: 'm3',
-    flowPropertyRef: '93a60a56-a3c8-22da-a746-0800200c9a66',
-    unitGroupRef: '93a60a57-a3c8-12da-a746-0800200c9a66',
-  },
-  {
-    label: 'Area (m2)',
-    unit: 'm2',
-    flowPropertyRef: '93a60a56-a3c8-19da-a746-0800200c9a66',
-    unitGroupRef: '93a60a57-a3c8-18da-a746-0800200c9a66',
-  },
-  {
-    label: 'Length (m)',
-    unit: 'm',
-    flowPropertyRef: '838aaa23-0117-11db-92e3-0800200c9a66',
-    unitGroupRef: '838aaa22-0117-11db-92e3-0800200c9a66',
-  },
-  {
-    label: 'Number of items',
-    unit: 'item',
-    flowPropertyRef: '01846770-4cfe-4a25-8ad9-919d8d378345',
-    unitGroupRef: '5beb6eed-33a9-47b8-9ede-1dfe8f679159',
-  },
-];
+function buildDeclaredUnitOptions(properties: FlowProperty[]): DeclaredUnitOption[] {
+  return properties
+    .filter((p) => p.flowPropertyUuid && p.referenceUnitGroupUuid && p.referenceUnit)
+    .map((p) => ({
+      label: `${p.flowProperty} (${p.referenceUnit})`,
+      unit: p.referenceUnit,
+      flowPropertyRef: p.flowPropertyUuid,
+      unitGroupRef: p.referenceUnitGroupUuid,
+    }));
+}
 
 const MATERIAL_PROPERTY_NAMES: MatMLPropertyName[] = [
   'gross density',
@@ -70,10 +51,15 @@ export default function Step3ProductFlow() {
   const productFlow = useEPDStore((s) => s.dataset.productFlow);
   const updateProductFlow = useEPDStore((s) => s.updateProductFlow);
 
+  const declaredUnitOptions = useMemo(
+    () => buildDeclaredUnitOptions(parseFlowPropertiesCSV(flowPropertiesCSV)),
+    []
+  );
+
   const nameEn = getLang(productFlow.name, 'en');
 
   const selectedUnitKey =
-    DECLARED_UNIT_OPTIONS.find(
+    declaredUnitOptions.find(
       (o) => o.flowPropertyRef === productFlow.declaredUnit.flowPropertyRef.refObjectId
     )?.flowPropertyRef ?? '';
 
@@ -82,7 +68,7 @@ export default function Step3ProductFlow() {
   const labelClass = 'block text-sm font-semibold text-gray-700 mb-1';
 
   function handleUnitChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const opt = DECLARED_UNIT_OPTIONS.find((o) => o.flowPropertyRef === e.target.value);
+    const opt = declaredUnitOptions.find((o) => o.flowPropertyRef === e.target.value);
     if (!opt) return;
     updateProductFlow({
       declaredUnit: {
@@ -125,11 +111,11 @@ export default function Step3ProductFlow() {
       <div className="space-y-5">
         {/* Product flow name */}
         <div>
-          <label htmlFor="flowNameEn" className={labelClass}>
+          <label htmlFor="productFlow.name" className={labelClass}>
             Product flow name (en)
           </label>
           <input
-            id="flowNameEn"
+            id="productFlow.name"
             type="text"
             value={nameEn}
             onChange={(e) =>
@@ -155,7 +141,7 @@ export default function Step3ProductFlow() {
             <option value="" disabled>
               Select a unit...
             </option>
-            {DECLARED_UNIT_OPTIONS.map((opt) => (
+            {declaredUnitOptions.map((opt) => (
               <option key={opt.flowPropertyRef} value={opt.flowPropertyRef}>
                 {opt.label}
               </option>

@@ -6,6 +6,8 @@ import type {
   CountryIndicator,
   CommonReference,
   FlowProperty,
+  BackgroundDatabase,
+  BackgroundDbProvider,
 } from './types';
 
 /**
@@ -268,4 +270,38 @@ export function parseFlowPropertiesCSV(csv: string): FlowProperty[] {
   }
 
   return properties;
+}
+
+/**
+ * Parse a Background-database-source-datasets CSV (GaBi or ecoinvent).
+ * GaBi columns:      Database Version, Name, UUID
+ * ecoinvent columns: Database Version, Name, UUID, version
+ */
+export function parseBackgroundDbCSV(csv: string, provider: BackgroundDbProvider): BackgroundDatabase[] {
+  const lines = csv.split(/\r?\n/);
+  const entries: BackgroundDatabase[] = [];
+  let headerSkipped = false;
+
+  for (const line of lines) {
+    if (!line.trim()) continue;
+
+    const fields = parseCSVLine(line);
+
+    if (!headerSkipped) {
+      headerSkipped = true;
+      continue;
+    }
+
+    const uuid = fields[2] ? fields[2].trim() : '';
+    if (!uuid) continue;
+
+    entries.push({
+      provider,
+      databaseVersion: fields[0] ? fields[0].trim() : '',
+      name: fields[1] ? fields[1].trim() : '',
+      uuid,
+    });
+  }
+
+  return entries;
 }

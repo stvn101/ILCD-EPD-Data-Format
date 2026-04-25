@@ -1,3 +1,10 @@
 node_modules/
 dist/
 .DS_Store
+
+# Claude Code session state
+.claude/
+
+# Vendored ILCD-EPD spec release (referenced by ?raw imports; obtain locally
+# from https://github.com/Inwistand/ILCD-EPD-Data-Format)
+ILCD-EPD-Data-Format-release-v1.3/

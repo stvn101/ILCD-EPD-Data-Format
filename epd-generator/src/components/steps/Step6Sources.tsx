@@ -1,6 +1,10 @@
-import React from 'react';
+import { useMemo } from 'react';
 import { useEPDStore } from '../../store/epd-store';
-import type { Reference } from '../../schema/types';
+import type { Reference, BackgroundDatabase, BackgroundDbProvider } from '../../schema/types';
+import { parseBackgroundDbCSV } from '../../schema/indicator-parser';
+// Static ?raw imports resolved by Vite at bundle time.
+import gabiCSV from '../../../../ILCD-EPD-Data-Format-release-v1.3/doc/identifiers/BackgroundDB_SourceDatasets_GaBi.csv?raw';
+import ecoinventCSV from '../../../../ILCD-EPD-Data-Format-release-v1.3/doc/identifiers/BackgroundDB_SourceDatasets_ecoinvent.csv?raw';
 
 function makeSourceRef(uuid: string, name: string): Reference {
   return {
@@ -18,25 +22,18 @@ function getRefUuid(ref: Reference | null): string {
   return ref?.refObjectId ?? '';
 }
 
-interface BackgroundDatabaseOption {
-  label: string;
-  uuid: string;
+function loadBackgroundDatabases(): Record<BackgroundDbProvider, BackgroundDatabase[]> {
+  return {
+    GaBi: parseBackgroundDbCSV(gabiCSV, 'GaBi'),
+    ecoinvent: parseBackgroundDbCSV(ecoinventCSV, 'ecoinvent'),
+  };
 }
-
-const BACKGROUND_DB_OPTIONS: BackgroundDatabaseOption[] = [
-  {
-    label: 'GaBi database (general)',
-    uuid: '28d74cc0-db8b-4d7e-bc44-5f6d56ce0c4a',
-  },
-  {
-    label: 'ecoinvent',
-    uuid: 'ecoinvent-placeholder-uuid-0000-000000000000',
-  },
-];
 
 export default function Step6Sources() {
   const sources = useEPDStore((s) => s.dataset.sources);
   const updateSources = useEPDStore((s) => s.updateSources);
+
+  const backgroundDatabases = useMemo(loadBackgroundDatabases, []);
 
   const inputClass =
     'block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500';
@@ -59,12 +56,17 @@ export default function Step6Sources() {
   const selectedDbUuid = getRefUuid(bgDb);
 
   function setBackgroundDb(uuid: string) {
-    const opt = BACKGROUND_DB_OPTIONS.find((o) => o.uuid === uuid);
+    if (!uuid) {
+      updateSources({ backgroundDatabases: [] });
+      return;
+    }
+    const all = [...backgroundDatabases.GaBi, ...backgroundDatabases.ecoinvent];
+    const opt = all.find((o) => o.uuid === uuid);
     if (!opt) {
       updateSources({ backgroundDatabases: [] });
       return;
     }
-    updateSources({ backgroundDatabases: [makeSourceRef(opt.uuid, opt.label)] });
+    updateSources({ backgroundDatabases: [makeSourceRef(opt.uuid, opt.name)] });
   }
 
   // EPD document
@@ -90,7 +92,7 @@ export default function Step6Sources() {
 
       <div className="space-y-6">
         {/* PCR */}
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-3">
+        <div id="sources.pcr" className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-3">
           <h3 className="text-sm font-semibold text-gray-700">PCR document</h3>
           <div>
             <label className="block text-xs text-gray-500 mb-1">Name</label>
@@ -129,11 +131,20 @@ export default function Step6Sources() {
             aria-label="Background database"
           >
             <option value="">None selected</option>
-            {BACKGROUND_DB_OPTIONS.map((opt) => (
-              <option key={opt.uuid} value={opt.uuid}>
-                {opt.label}
-              </option>
-            ))}
+            <optgroup label="GaBi / Sphera MLC">
+              {backgroundDatabases.GaBi.map((opt) => (
+                <option key={opt.uuid} value={opt.uuid}>
+                  {opt.name}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="ecoinvent">
+              {backgroundDatabases.ecoinvent.map((opt) => (
+                <option key={opt.uuid} value={opt.uuid}>
+                  {opt.name}
+                </option>
+              ))}
+            </optgroup>
           </select>
         </div>
 

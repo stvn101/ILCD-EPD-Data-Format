@@ -246,7 +246,7 @@ export default function Step5LifecycleModules() {
       </p>
 
       {/* Module toggle buttons */}
-      <div>
+      <div id="declaredModules">
         <h3 className="text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">
           Declared Modules
         </h3>
@@ -275,20 +275,26 @@ export default function Step5LifecycleModules() {
       {/* Indicator matrices — only shown when at least one module is selected */}
       {activeModules.length > 0 ? (
         <>
-          <IndicatorMatrix
-            title="LCI Indicators (Exchanges)"
-            indicators={indicatorSet.exchanges}
-            modules={activeModules}
-            values={exchangeValues}
-            onChange={handleExchangeChange}
-          />
-          <IndicatorMatrix
-            title="LCIA Impact Indicators"
-            indicators={indicatorSet.lcia}
-            modules={activeModules}
-            values={lciaValues}
-            onChange={handleLCIAChange}
-          />
+          <div id="exchanges">
+            <IndicatorMatrix
+              title="LCI Indicators (Exchanges)"
+              indicators={indicatorSet.exchanges}
+              modules={activeModules}
+              values={exchangeValues}
+              onChange={handleExchangeChange}
+              idPrefix="exchanges"
+            />
+          </div>
+          <div id="lciaResults">
+            <IndicatorMatrix
+              title="LCIA Impact Indicators"
+              indicators={indicatorSet.lcia}
+              modules={activeModules}
+              values={lciaValues}
+              onChange={handleLCIAChange}
+              idPrefix="lciaResults"
+            />
+          </div>
           {selectedCountry && countryIndicators.length > 0 && (
             <IndicatorMatrix
               title={`Country-Specific Indicators (${selectedCountry})`}
@@ -296,6 +302,7 @@ export default function Step5LifecycleModules() {
               modules={activeModules}
               values={lciaValues}
               onChange={handleCountryLCIAChange}
+              idPrefix="lciaResults"
             />
           )}
         </>

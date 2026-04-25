@@ -6,6 +6,7 @@ import {
   parseCountryIndicatorCSV,
   parseCommonReferencesCSV,
   parseFlowPropertiesCSV,
+  parseBackgroundDbCSV,
 } from '../indicator-parser';
 
 // __dirname = epd-generator/src/schema/__tests__
@@ -185,5 +186,56 @@ describe('parseFlowPropertiesCSV', () => {
   it('should include Carbon content (biogenic) flow property', () => {
     const carbon = result.find((fp) => fp.flowProperty === 'Carbon content (biogenic)');
     expect(carbon).toBeDefined();
+  });
+});
+
+describe('parseBackgroundDbCSV - GaBi', () => {
+  const csv = readCSV('BackgroundDB_SourceDatasets_GaBi.csv');
+  const result = parseBackgroundDbCSV(csv, 'GaBi');
+
+  it('should return at least one entry', () => {
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it('should set provider to GaBi on every entry', () => {
+    expect(result.every((e) => e.provider === 'GaBi')).toBe(true);
+  });
+
+  it('should resolve "GaBi Database (general)" to UUID 28d74cc0-db8b-4d7e-bc44-5f6d56ce0c4a', () => {
+    const general = result.find((e) => e.databaseVersion === 'all');
+    expect(general).toBeDefined();
+    expect(general!.name).toBe('GaBi Database (general)');
+    expect(general!.uuid).toBe('28d74cc0-db8b-4d7e-bc44-5f6d56ce0c4a');
+  });
+
+  it('should parse a Sphera MLC entry with quoted commas in name', () => {
+    const sphera = result.find((e) => e.name.includes('Sphera MLC'));
+    expect(sphera).toBeDefined();
+  });
+});
+
+describe('parseBackgroundDbCSV - ecoinvent', () => {
+  const csv = readCSV('BackgroundDB_SourceDatasets_ecoinvent.csv');
+  const result = parseBackgroundDbCSV(csv, 'ecoinvent');
+
+  it('should return at least one entry', () => {
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it('should set provider to ecoinvent on every entry', () => {
+    expect(result.every((e) => e.provider === 'ecoinvent')).toBe(true);
+  });
+
+  it('should resolve "ecoinvent database (general)" to UUID b497a91f-e14b-4b69-8f28-f50eb1576766', () => {
+    const general = result.find((e) => e.databaseVersion === 'all');
+    expect(general).toBeDefined();
+    expect(general!.name).toBe('ecoinvent database (general)');
+    expect(general!.uuid).toBe('b497a91f-e14b-4b69-8f28-f50eb1576766');
+  });
+
+  it('should parse all ecoinvent versions including 3.10', () => {
+    const v310 = result.find((e) => e.databaseVersion === '3.10');
+    expect(v310).toBeDefined();
+    expect(v310!.uuid).toBe('6edab576-5247-472f-a2f4-0cb84561ca8b');
   });
 });

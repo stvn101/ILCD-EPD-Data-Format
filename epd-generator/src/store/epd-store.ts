@@ -23,7 +23,7 @@ interface EPDStoreState {
 
 export const useEPDStore = create<EPDStoreState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       dataset: createEmptyDataset(),
       currentStep: 0,
       selectedCountry: null,
