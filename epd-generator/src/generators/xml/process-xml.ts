@@ -579,8 +579,8 @@ export function generateProcessXML(dataset: EPDDataset): string {
     .join('\n');
 
   // Consolidated <common:other> for dataSourcesTreatmentAndRepresentativeness:
-  // manufacturers (when applicable). Future: referenceToOriginalEPD belongs
-  // here too per the v1.3 sample (currently still wired into publicationAndOwnership).
+  // manufacturers (epd24, when applicable) + referenceToOriginalEPD (epd2),
+  // per the v1.3 sample (sample_data/processes/EPDv1.3_example_*.xml lines 221-227).
   const dstrOtherParts: string[] = [];
   const dstrIndent = '        ';
 
@@ -591,6 +591,16 @@ export function generateProcessXML(dataset: EPDDataset): string {
   ) {
     dstrOtherParts.push(
       renderManufacturers(dataset.organisations.manufacturers, dstrIndent),
+    );
+  }
+
+  if (hasEpd2019 && dataset.publicationAndOwnership.referenceToOriginalEPD) {
+    dstrOtherParts.push(
+      renderReference(
+        'epd2:referenceToOriginalEPD',
+        dataset.publicationAndOwnership.referenceToOriginalEPD,
+        dstrIndent,
+      ),
     );
   }
 
@@ -657,21 +667,15 @@ export function generateProcessXML(dataset: EPDDataset): string {
       )
     : '';
 
-  const publisherRef = dataset.publicationAndOwnership.referenceToPublisher
-    ? renderReference(
-        'common:referenceToUnchangedRepublication',
-        dataset.publicationAndOwnership.referenceToPublisher,
-        '      ',
-      )
-    : '';
-
-  const originalEPDRef =
-    dataset.publicationAndOwnership.referenceToOriginalEPD && hasEpd2019
-      ? renderReference(
-          'epd2:referenceToOriginalEPD',
-          dataset.publicationAndOwnership.referenceToOriginalEPD,
-          '      ',
-        )
+  // referenceToPublisher lives inside <publicationAndOwnership>/<common:other>
+  // as <epd2:referenceToPublisher> per the v1.3 sample (lines 286-291).
+  const pubAndOwnerCommonOther =
+    hasEpd2019 && dataset.publicationAndOwnership.referenceToPublisher
+      ? `      <common:other>\n${renderReference(
+          'epd2:referenceToPublisher',
+          dataset.publicationAndOwnership.referenceToPublisher,
+          '        ',
+        )}\n      </common:other>`
       : '';
 
   const registryAuthorityRef = dataset.publicationAndOwnership.registrationAuthority
@@ -767,8 +771,7 @@ export function generateProcessXML(dataset: EPDDataset): string {
     opt(registryAuthorityRef),
     opt(ownerRef),
     `      <common:copyright>${dataset.publicationAndOwnership.copyright}</common:copyright>`,
-    opt(publisherRef),
-    opt(originalEPDRef),
+    opt(pubAndOwnerCommonOther),
     `    </publicationAndOwnership>`,
     `  </administrativeInformation>`,
 

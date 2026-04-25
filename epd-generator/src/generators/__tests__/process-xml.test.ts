@@ -795,4 +795,85 @@ describe('generateProcessXML', () => {
     expect(xml).toContain('<referenceToReferenceFlow>5</referenceToReferenceFlow>');
     expect(xml).toContain('dataSetInternalID="5"');
   });
+
+  // ---- Bug fix: referenceToPublisher emitted as <epd2:referenceToPublisher>
+  //               wrapped in <common:other> inside <publicationAndOwnership> ----
+  it('emits referenceToPublisher under epd2: namespace inside publicationAndOwnership/common:other', () => {
+    dataset.publicationAndOwnership.referenceToPublisher = {
+      type: 'contact data set',
+      refObjectId: 'publisher-uuid',
+      version: '00.00.002',
+      shortDescription: [{ lang: 'en', value: 'The Swift® EPD Program' }],
+    };
+    const xml = generateProcessXML(dataset);
+
+    // Correct element name + namespace
+    expect(xml).toContain('<epd2:referenceToPublisher');
+    expect(xml).toContain('refObjectId="publisher-uuid"');
+    // Old wrong name must not leak in
+    expect(xml).not.toContain('referenceToUnchangedRepublication');
+
+    // Lives inside publicationAndOwnership > common:other (verified by ordering)
+    const pubIdx = xml.indexOf('<publicationAndOwnership>');
+    const otherIdx = xml.indexOf('<common:other>', pubIdx);
+    const pubRefIdx = xml.indexOf('<epd2:referenceToPublisher', pubIdx);
+    const closePubIdx = xml.indexOf('</publicationAndOwnership>', pubIdx);
+    expect(pubIdx).toBeGreaterThan(0);
+    expect(otherIdx).toBeGreaterThan(pubIdx);
+    expect(pubRefIdx).toBeGreaterThan(otherIdx);
+    expect(pubRefIdx).toBeLessThan(closePubIdx);
+  });
+
+  it('omits referenceToPublisher entirely on +A1 (epd2 namespace not declared)', () => {
+    dataset.meta.standardVersion = '+A1';
+    dataset.publicationAndOwnership.referenceToPublisher = {
+      type: 'contact data set',
+      refObjectId: 'publisher-uuid',
+      shortDescription: [{ lang: 'en', value: 'Some Publisher' }],
+    };
+    const xml = generateProcessXML(dataset);
+    expect(xml).not.toContain('referenceToPublisher');
+    expect(xml).not.toContain('publisher-uuid');
+  });
+
+  // ---- Bug fix: referenceToOriginalEPD lives in dataSourcesTreatmentAndRepresentativeness
+  //               not publicationAndOwnership ----
+  it('emits referenceToOriginalEPD inside dataSourcesTreatmentAndRepresentativeness/common:other', () => {
+    dataset.publicationAndOwnership.referenceToOriginalEPD = {
+      type: 'source data set',
+      refObjectId: 'original-epd-uuid',
+      version: '00.00.002',
+      shortDescription: [{ lang: 'en', value: 'Wood Panel EPD' }],
+    };
+    const xml = generateProcessXML(dataset);
+
+    expect(xml).toContain('<epd2:referenceToOriginalEPD');
+    expect(xml).toContain('refObjectId="original-epd-uuid"');
+
+    // Must be inside dataSourcesTreatmentAndRepresentativeness, NOT inside publicationAndOwnership
+    const dstrIdx = xml.indexOf('<dataSourcesTreatmentAndRepresentativeness>');
+    const dstrCloseIdx = xml.indexOf('</dataSourcesTreatmentAndRepresentativeness>');
+    const refIdx = xml.indexOf('<epd2:referenceToOriginalEPD');
+    expect(dstrIdx).toBeGreaterThan(0);
+    expect(refIdx).toBeGreaterThan(dstrIdx);
+    expect(refIdx).toBeLessThan(dstrCloseIdx);
+
+    // Must NOT appear inside publicationAndOwnership
+    const pubIdx = xml.indexOf('<publicationAndOwnership>');
+    const pubCloseIdx = xml.indexOf('</publicationAndOwnership>');
+    const refInPub = xml.slice(pubIdx, pubCloseIdx).includes('referenceToOriginalEPD');
+    expect(refInPub).toBe(false);
+  });
+
+  it('omits referenceToOriginalEPD on +A1 (epd2 namespace not declared)', () => {
+    dataset.meta.standardVersion = '+A1';
+    dataset.publicationAndOwnership.referenceToOriginalEPD = {
+      type: 'source data set',
+      refObjectId: 'original-epd-uuid',
+      shortDescription: [{ lang: 'en', value: 'Original' }],
+    };
+    const xml = generateProcessXML(dataset);
+    expect(xml).not.toContain('referenceToOriginalEPD');
+    expect(xml).not.toContain('original-epd-uuid');
+  });
 });
