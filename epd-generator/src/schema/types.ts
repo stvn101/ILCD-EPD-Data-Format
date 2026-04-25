@@ -69,7 +69,7 @@ export interface FlowProperty {
   versionUnitGroup: string;
 }
 
-export type BackgroundDbProvider = 'GaBi' | 'ecoinvent';
+export type BackgroundDbProvider = 'GaBi' | 'ecoinvent' | 'AusLCI';
 
 export interface BackgroundDatabase {
   provider: BackgroundDbProvider;

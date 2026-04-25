@@ -22,8 +22,25 @@ function getRefUuid(ref: Reference | null): string {
   return ref?.refObjectId ?? '';
 }
 
+// AusLCI — Australian Life Cycle Inventory (run by ALCAS).
+// Not in the upstream ILCD-EPD spec catalogue, so hardcoded here. The UUIDs
+// below are PLACEHOLDERS until AusLCI registers source-dataset UUIDs with
+// EPD International / a recognised programme operator. Until then, Task 7's
+// cross-reference validator will warn on these UUIDs (as designed —
+// flags that an unregistered DB has been selected).
+// TODO: replace with real registered UUIDs once AusLCI completes registration.
+const AUSLCI_DATABASES: BackgroundDatabase[] = [
+  {
+    provider: 'AusLCI',
+    databaseVersion: 'current',
+    name: 'AusLCI database (current)',
+    uuid: 'auslci-placeholder-current-0000-000000000001',
+  },
+];
+
 function loadBackgroundDatabases(): Record<BackgroundDbProvider, BackgroundDatabase[]> {
   return {
+    AusLCI: AUSLCI_DATABASES,
     GaBi: parseBackgroundDbCSV(gabiCSV, 'GaBi'),
     ecoinvent: parseBackgroundDbCSV(ecoinventCSV, 'ecoinvent'),
   };
@@ -131,6 +148,13 @@ export default function Step6Sources() {
             aria-label="Background database"
           >
             <option value="">None selected</option>
+            <optgroup label="AusLCI (Australian Life Cycle Inventory)">
+              {backgroundDatabases.AusLCI.map((opt) => (
+                <option key={opt.uuid} value={opt.uuid}>
+                  {opt.name}
+                </option>
+              ))}
+            </optgroup>
             <optgroup label="GaBi / Sphera MLC">
               {backgroundDatabases.GaBi.map((opt) => (
                 <option key={opt.uuid} value={opt.uuid}>

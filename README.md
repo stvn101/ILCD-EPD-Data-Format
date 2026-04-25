@@ -1,5 +1,7 @@
 # ILCD-EPD Data Format
 
+> AI-assisted EPD authoring for the Australian construction industry. Sovereign data via AusLCI. **No ecoinvent licensing required.** Targeting alignment with [ECO Platform](https://www.eco-platform.org/) tool-verification (the same track Circular Ecology's generator was verified under) for international recognition and GBCA acceptance in Australia.
+
 Two parallel tracks live in this repo. They share a name but no git history.
 
 ## Branches
@@ -52,9 +54,16 @@ The generator's internal validation (Task 7) checks cross-references and indicat
 
 This is a manual step — automating it would require building the Eclipse RCP app from source, which is high cost for a one-off validation.
 
+## Strategic positioning
+
+- **Background data:** AusLCI primary (Australian sovereign LCA data, run by ALCAS). ecoinvent declined — no foreign licensing dependency. GaBi / ecoinvent remain selectable in the wizard so users authoring EPDs from existing LCAs done in those tools can declare their data source, but we don't license either.
+- **Tool recognition target:** [ECO Platform](https://www.eco-platform.org/) tool-verification. ECO Platform recently verified Circular Ecology's EPD generator under this same track; GBCA Australia recognises ECO Platform's stamp, so verification flows through to Australian Green Star credits without needing direct EPD Australasia approval (EPD Australasia explicitly directs tool-recognition queries to EPD International / parent body).
+- **Standards alignment:** EN 15804+A1, +A2/EF3.0, and +A2/EF3.1 (full v1.3 support).
+- **Cost thesis:** drive single-product EPD cost from AUD 5–25k (typical) toward sub-AUD 1k via cheap authoring + AusLCI + sectoral / templated LCA workflows + streamlined verification. Authoring is one piece; the bigger levers are the LCA work and verifier hours.
+
 ## Status
 
-The 9-task v1.3 gap-closure plan is **complete** (see [`epd-generator/todos.md`](epd-generator/todos.md) for the per-task notes and [`epd-generator/HANDOFF.md`](epd-generator/HANDOFF.md) for the current session-handover summary). 152/152 vitest tests pass; production build is clean (~188 kB main / ~60 kB gzipped).
+The 9-task v1.3 gap-closure plan is **complete** (see [`epd-generator/todos.md`](epd-generator/todos.md) for the per-task notes and [`epd-generator/HANDOFF.md`](epd-generator/HANDOFF.md) for the current session-handover summary). 156/156 vitest tests pass; production build is clean (~188 kB main / ~60 kB gzipped).
 
 **Open follow-ups** (captured in `todos.md`):
 
